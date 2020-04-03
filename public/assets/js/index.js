@@ -1,8 +1,6 @@
 var $noteTitle = $(".note-title");
 var $noteText = $(".note-textarea");
-// note id
 var $noteId = $("#id");
-//
 var $saveNoteBtn = $(".save-note");
 var $newNoteBtn = $(".new-note");
 var $noteList = $(".list-container .list-group");
@@ -89,13 +87,14 @@ var handleNoteDelete = function (event) {
   });
 };
 
+
 // Sets the activeNote and displays it
 var handleNoteView = function () {
   activeNote = $(this).data();
   renderActiveNote();
 };
 
-// Sets the activeNote to and empty object and allows the user to enter a new note
+// Sets the activeNote to an empty object and allows the user to enter a new note
 var handleNewNoteView = function () {
   activeNote = {};
   renderActiveNote();
@@ -111,43 +110,55 @@ var handleRenderSaveBtn = function () {
   }
 };
 
-// Render's the list of note titles
-// notes = notesDb array
+// Render's the list of existing note titles
+// notes = notesDb array, passed from /api/routes in server.js, then through getAndRenderNotes()
 var renderNoteList = function (notes) {
+  // clear the ul element containing the list of notes
   $noteList.empty();
-
+  // create an array to hold the new li elements
   var noteListItems = [];
 
   // start the loop at i = 1 to ignore the dummy element in db.json and the array
   for (var i = 1; i < notes.length; i++) {
+    // declare a variable to hold the current note
     var note = notes[i];
-
+    // create a new li element with class="list-group-item"
     var $li = $("<li class='list-group-item'>");
     // add the attribut id="i" to apply a unique id to each li element
     $li.attr("id", i);
+    //  create a span element to hold the title of the note
     var $span = $("<span>").text(note.title);
+    // create the 'delete note' icon element
     var $delBtn = $(
       "<i class='fas fa-trash-alt float-right text-danger delete-note'>"
     );
-
+    // append the title text and delete button to the new li element
     $li.append($span, $delBtn);
+    // add the li element to the array
     noteListItems.push($li);
 
   }
+  // append the array of new li elements to the ul element
   $noteList.append(noteListItems);
 };
 
 // Gets notes from the db and renders them to the sidebar
 var getAndRenderNotes = function () {
+  // 'data' is the array notesDB sent by the /api/notes route in server.js
   return getNotes().then(function (data) {
     renderNoteList(data);
   });
 };
 
+// event listener for the save new note icon
 $saveNoteBtn.on("click", handleNoteSave);
+
 $noteList.on("click", ".list-group-item", handleNoteView);
+// event listener for new note icon
 $newNoteBtn.on("click", handleNewNoteView);
+// event listener for the delete note icon
 $noteList.on("click", ".delete-note", handleNoteDelete);
+// event listeners to render the new note save icon after the user clicks into the note title or note text boxes
 $noteTitle.on("keyup", handleRenderSaveBtn);
 $noteText.on("keyup", handleRenderSaveBtn);
 

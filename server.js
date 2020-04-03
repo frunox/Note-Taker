@@ -1,110 +1,84 @@
 //DECLARE DEPENDENCIES
-var http = require("http");
+// fs and path are packages included in node
 var fs = require('fs');
 var path = require('path');
+// express is a package in the npm library and must be installed
 var express = require('express');
-var notesDB = require('./db/db.json');
-// var notesDB = [];
-
-// Cynthia's code
-// var temp = fs.readFileSync("./db/db.json", "utf8");
-
-// var tempArray = JSON.parse(temp);
-
-// var notesDB = Object.keys(tempArray).map(i => tempArray[i]);
-
-// console.log('notesDB intialized: ', notesDB + "  typeof: " + (typeof (notesDB)));
-console.log('notesdDB[0]: ', JSON.stringify(notesDB[0]));
 
 // Instantiate a new express app utilizing the express() method.
 var app = express();
 
-//Decleare a port number for the server to find the application.
+//  notesDB is an array of objects, intialized with the data in db.json
+//  that holds the objects with titles and text of each note
+var notesDB = require('./db/db.json');
+
+// Declare a port number for the server to find the application.
+// this format is needed for Heroku
 var PORT = process.env.PORT || 8080;
-
-
-var notesArray = [];
 
 // Middleware to handle parsing of the request string and converts to a json object. Later referred to as req.body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// we needed this to access the files in the folders inside the 'public' folder
 app.use(express.static('public'));
 
-//  Create .get routes
+//  CREATE GET ROUTES
 
-// Return the index page
+// ROOT ROUTE: Return the path to the index.html file so it can be rendered
 app.get("/", function (req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// Return the notes page
+// NOTES ROUTE: Return the path to the notes.html file so it can be rendered
 app.get("/notes", function (req, res) {
     res.sendFile(path.join(__dirname, "public/notes.html"));
 });
 
 
-// Create API get routes
-//set up the notes
+// CREATE API ROUTES
+// When the /notes route is called, send the array of existing notes to the page to be rendered
 app.get("/api/notes", function (req, res) {
-    //response to access notesDB variable in order to send to response.
+    // .json() method sends the json formatted array, which is parsed by the browser for rendering
     res.json(notesDB);
 });
 
-// Create the API POST routes
+// Create the API POST route
 app.post('/api/notes', function (req, res) {
-    // console.log('newNote:  ' + JSON.stringify(req.body));
-    // var newNote = JSON.stringify(req.body);
+    // after a note is added, the title and text is sent in req.body and added to the array of notes
     notesDB.push(req.body);
-    // console.log('notesDB:  ' + notesDB);
-    // console.log('notesDB:  ' + JSON.stringify(notesDB));
 
-
-
-    // var junk = notesDB.splice(0, 1);
-
-    for (var i = 0; i < notesDB.length; i++) {
-        console.log('notesDB[i]:  ' + JSON.stringify(notesDB[i]));
-    }
-
-    // console.log('notesDB:  ' + JSON.stringify(notesDB));
-
+    // over-write db.json with the array containing the new note
     fs.writeFile('db/db.json', JSON.stringify(notesDB), function (err) {
         if (err) {
             throw error;
         }
     });
-
-
-
-    // notesDB.push(newNote)
-    // console.log('notesDB:  ' + notesDB)
+    // respond with the updated array to be rendered
     res.json(notesDB)
 });
 
 // Create the API delete routes
 app.delete('/api/notes/:id', function (req, res) {
-
-    // console.log(req.params.id)
+    // the id for the note to be deleted is in req.params.id
+    // use .splice() to remove the note from the array
     notesDB.splice(req.params.id, 1)
-
+    //  over-write db.json again, this time without the note that was deleted
     fs.writeFile('db/db.json', JSON.stringify(notesDB), function (err) {
         if (err) {
             throw error;
         }
     })
+    // a default response to the request.  A response is required for every request.
     res.json(true);
 })
 
-
+//  a catch-all route to return to the home page (index.html) if an incorrect route is hit
 app.get("*", function (req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-
-
-
-
-//Turns our server on
+//Turns our server on.  The app is now listening to the port defined above for client requests
 app.listen(PORT, function () {
     console.log("Server listening on: http://localhost:" + PORT);
 });
