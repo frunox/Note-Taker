@@ -81,15 +81,25 @@ app.post('/api/notes', function (req, res) {
     res.json(notesDB)
 });
 
-app.delete('/delete', function (req, res) {
-    res.send('Note deleted.')
+// Create the API delete routes
+app.delete('/api/notes/:id', function (req, res) {
+
+    // console.log(req.params.id)
+    notesDB.splice(req.params.id, 1)
+
+    fs.writeFile('db/db.json', JSON.stringify(notesDB), function (err) {
+        if (err) {
+            throw error;
+        }
+    })
+    res.json(true);
 })
 
 
 app.get("*", function (req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
-// Create the API delete routes
+
 
 
 

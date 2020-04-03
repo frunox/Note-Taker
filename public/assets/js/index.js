@@ -19,6 +19,7 @@ var getNotes = function () {
 };
 
 // A function for saving a note to the db
+// note is the id for the note selected to delete (also the array index)
 var saveNote = function (note) {
   return $.ajax({
     url: "/api/notes",
@@ -57,7 +58,6 @@ var handleNoteSave = function () {
   var newNote = {
     title: $noteTitle.val(),
     text: $noteText.val()
-    id: $noteId.val()
   };
 
   saveNote(newNote).then(function (data) {
@@ -73,13 +73,17 @@ var handleNoteDelete = function (event) {
 
   var note = $(this)
     .parent(".list-group-item")
-    .data();
+  //  remove the .data() (don't know why)
+  // .data();
 
   if (activeNote.id === note.id) {
     activeNote = {};
   }
-
-  deleteNote(note.id).then(function () {
+  //  create variable to hold the id for the element to delete
+  var noteId = $(note).attr("id");
+  // call deleteNote() with the new variable noteId as an argument
+  deleteNote(noteId).then(function (data) {
+    console.log(data)
     getAndRenderNotes();
     renderActiveNote();
   });
@@ -108,15 +112,18 @@ var handleRenderSaveBtn = function () {
 };
 
 // Render's the list of note titles
+// notes = notesDb array
 var renderNoteList = function (notes) {
   $noteList.empty();
 
   var noteListItems = [];
 
-  for (var i = 0; i < notes.length; i++) {
+  // start the loop at i = 1 to ignore the dummy element in db.json and the array
+  for (var i = 1; i < notes.length; i++) {
     var note = notes[i];
 
     var $li = $("<li class='list-group-item'>");
+    // add the attribut id="i" to apply a unique id to each li element
     $li.attr("id", i);
     var $span = $("<span>").text(note.title);
     var $delBtn = $(
