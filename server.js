@@ -20,7 +20,8 @@ console.log('notesdDB[0]: ', JSON.stringify(notesDB[0]));
 var app = express();
 
 //Decleare a port number for the server to find the application.
-var PORT = 8080;
+var PORT = process.env.PORT || 8080;
+
 
 var notesArray = [];
 
