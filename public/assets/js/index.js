@@ -10,6 +10,7 @@ var activeNote = {};
 
 // A function for getting all notes from the db
 var getNotes = function () {
+  // console.log('In getNotes()')
   return $.ajax({
     url: "/api/notes",
     method: "GET"
@@ -19,6 +20,8 @@ var getNotes = function () {
 // A function for saving a note to the db
 // note is the id for the note selected to delete (also the array index)
 var saveNote = function (note) {
+  // console.log('In saveNote()')
+  activeNote = note;
   return $.ajax({
     url: "/api/notes",
     data: note,
@@ -29,7 +32,7 @@ var saveNote = function (note) {
 // A function for deleting a note from the db
 var deleteNote = function (id) {
   return $.ajax({
-    url: "api/notes/" + id,
+    url: "/api/notes/" + id,
     method: "DELETE"
   });
 };
@@ -38,7 +41,7 @@ var deleteNote = function (id) {
 var renderActiveNote = function () {
   $saveNoteBtn.hide();
 
-  if (activeNote.id) {
+  if (activeNote.noteId) {
     $noteTitle.attr("readonly", true);
     $noteText.attr("readonly", true);
     $noteTitle.val(activeNote.title);
@@ -71,8 +74,7 @@ var handleNoteDelete = function (event) {
 
   var note = $(this)
     .parent(".list-group-item")
-  //  remove the .data() (don't know why)
-  // .data();
+  // .data()
 
   if (activeNote.id === note.id) {
     activeNote = {};
@@ -81,7 +83,6 @@ var handleNoteDelete = function (event) {
   var noteId = $(note).attr("id");
   // call deleteNote() with the new variable noteId as an argument
   deleteNote(noteId).then(function (data) {
-    console.log(data)
     getAndRenderNotes();
     renderActiveNote();
   });
@@ -90,7 +91,8 @@ var handleNoteDelete = function (event) {
 
 // Sets the activeNote and displays it
 var handleNoteView = function () {
-  activeNote = $(this).data();
+  activeNote = $noteText.val().trim();
+  console.log('activeNote = ' + JSON.stringify(activeNote))
   renderActiveNote();
 };
 
@@ -117,7 +119,6 @@ var renderNoteList = function (notes) {
   $noteList.empty();
   // create an array to hold the new li elements
   var noteListItems = [];
-
   // start the loop at i = 1 to ignore the dummy element in db.json and the array
   for (var i = 1; i < notes.length; i++) {
     // declare a variable to hold the current note
@@ -144,7 +145,6 @@ var renderNoteList = function (notes) {
 
 // Gets notes from the db and renders them to the sidebar
 var getAndRenderNotes = function () {
-  // 'data' is the array notesDB sent by the /api/notes route in server.js
   return getNotes().then(function (data) {
     renderNoteList(data);
   });
@@ -152,7 +152,7 @@ var getAndRenderNotes = function () {
 
 // event listener for the save new note icon
 $saveNoteBtn.on("click", handleNoteSave);
-
+// event listener for the note title in the list
 $noteList.on("click", ".list-group-item", handleNoteView);
 // event listener for new note icon
 $newNoteBtn.on("click", handleNewNoteView);

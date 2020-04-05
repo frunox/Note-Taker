@@ -1,41 +1,26 @@
-// ===============================================================================
-// DEPENDENCIES
-// We need to include the path package to get the correct file path for our html
-// ===============================================================================
+// use 'path' node package to define paths to files
 var path = require("path");
+//  express.Router() class to define groups of routes
+var router = require("express").Router();
 
+// ROOT ROUTE - directs browser to the landing page
+router.get("/", function (req, res) {
+    // console.log("REACHED THE ROOT ROUTE")
+    res.sendFile(path.join(__dirname, "../public/index.html"));
+});
 
-// ===============================================================================
-// ROUTING
-// ===============================================================================
+// NOTES ROUTE - directs browser to the notes page
+router.get("/notes", function (req, res) {
+    // console.log("REACHED THE NOTES ROUTE")
+    res.sendFile(path.join(__dirname, "../public/notes.html"));
+})
 
-module.exports = function (app) {
-    // HTML GET Requests
-    // Below code handles when users "visit" a page.
-    // In each of the below cases the user is shown an HTML page of content
-    // ---------------------------------------------------------------------------
+//  CATCH-ALL ROUTE - works as an error handler so if a request is received
+// to an undefined route, the browser re-directs to the landing page and no HTML 404 error is created
+router.get("*", function (req, res) {
+    // console.log("REACHED THE CATCH_ALL ROUTE")
+    res.sendFile(path.join(__dirname, "../public/index.html"));
+});
 
-    app.get("/", function (req, res) {
-        // utilize the res.sendFile() method which transfer the given file path and sets the content-type response HTTP header to the appropriate header (example- sends the html path to the browser)
-        res.sendFile(path.join(__dirname, "../public/index.html"));
-    });
-
-    // Basic (root) route that sends the user to index.html
-    // use express (app.) to declare a GET route (root in this case)
-    // .get has 2 args - route ("/")
-    // second arg is a callback == function  to defin the path to index.html
-    app.get("/", function (req, res) {
-
-        res.sendFile(path.join(__dirname, "public/index.html"));
-    });
-
-    app.get("/notes", function (req, res) {
-        res.sendFile(path.join(__dirname, "../public/notes.html"));
-    });
-
-
-    // If no matching route is found default to home
-    app.get("*", function (req, res) {
-        res.sendFile(path.join(__dirname, "../public/home.html"));
-    });
-};
+// Export the routes via the Router
+module.exports = router;
